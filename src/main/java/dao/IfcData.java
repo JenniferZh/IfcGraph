@@ -2,14 +2,13 @@ package dao;
 
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.io.fs.FileUtils;
-import util.Element;
-import util.Entity;
-import util.Attribute;
-import util.IfcFile;
+import model.Element;
+import model.Entity;
+import model.Attribute;
+import model.IfcFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,13 +24,6 @@ public class IfcData {
     GraphDatabaseService graphDb;
 
     private IfcFile ifcFile = null;
-
-    private enum RelTypes implements RelationshipType
-    {
-        HAS_ATTR,
-        SUBTYPE_OF,
-        REF_TO
-    }
 
     public IfcData(String filePath) throws IOException{
         ifcFile = IfcFileLoader.loadIFC(filePath);
@@ -55,38 +47,38 @@ public class IfcData {
         System.out.println("建立关系"+(endTime-midTime));
     }
 
-    /**
-     * insert element to database
-     * @param ele element(object) to be inserted
-     * @param ent entity(class) that the element belongs to
-     */
-    private void insert(Element ele, Entity ent) {
-        if (ele == null || ent == null || ele.getAttrs().size() != ent.getAttributes().size())
-            throw new IllegalArgumentException();
-
-        try ( Transaction tx = graphDb.beginTx() )
-        {
-
-            Node dataNode = graphDb.createNode();
-            String labelName = ent.getName();
-            Label enlabel = Label.label(labelName);
-            dataNode.addLabel(enlabel);
-            dataNode.addLabel(Label.label("Element"));
-
-            int lineId = ele.getLineID();
-            dataNode.setProperty("lineId", lineId);
-
-            List<String> attrsElement = ele.getAttrs();
-            List<Attribute> attrsEntity = ent.getAttributes();
-
-            for (int i = 0; i < attrsElement.size(); i++) {
-                String attr_name = attrsEntity.get(i).getName();
-                String attr_value = attrsElement.get(i);
-                dataNode.setProperty(attr_name, attr_value);
-            }
-            tx.success();
-        }
-    }
+//    /**
+//     * insert element to database
+//     * @param ele element(object) to be inserted
+//     * @param ent entity(class) that the element belongs to
+//     */
+//    private void insert(Element ele, Entity ent) {
+//        if (ele == null || ent == null || ele.getAttrs().size() != ent.getAttributes().size())
+//            throw new IllegalArgumentException();
+//
+//        try ( Transaction tx = graphDb.beginTx() )
+//        {
+//
+//            Node dataNode = graphDb.createNode();
+//            String labelName = ent.getName();
+//            Label enlabel = Label.label(labelName);
+//            dataNode.addLabel(enlabel);
+//            dataNode.addLabel(Label.label("Element"));
+//
+//            int lineId = ele.getLineID();
+//            dataNode.setProperty("lineId", lineId);
+//
+//            List<String> attrsElement = ele.getAttrs();
+//            List<Attribute> attrsEntity = ent.getAttributes();
+//
+//            for (int i = 0; i < attrsElement.size(); i++) {
+//                String attr_name = attrsEntity.get(i).getName();
+//                String attr_value = attrsElement.get(i);
+//                dataNode.setProperty(attr_name, attr_value);
+//            }
+//            tx.success();
+//        }
+//    }
 
     private void insertAll(List<Element> elementList, Map<String, Entity> map) {
         if (elementList == null || map == null)

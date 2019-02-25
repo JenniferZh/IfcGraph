@@ -1,15 +1,18 @@
 package dao;
 
-import org.antlr.v4.runtime.*;
+import model.Element;
+import model.Entity;
+import model.IfcFile;
 import org.antlr.v4.runtime.tree.ParseTree;
 import parser.STEPGrammarBaseVisitor;
-import parser.STEPGrammarLexer;
 import parser.STEPGrammarParser;
 import util.*;
 
 
 import java.io.*;
 import java.util.*;
+
+import static util.AntlrUtil.getSTEPGrammarParser;
 
 public class IfcFileLoader extends STEPGrammarBaseVisitor<Void> {
     private Element curElement = null;
@@ -32,10 +35,7 @@ public class IfcFileLoader extends STEPGrammarBaseVisitor<Void> {
 
         String header = getStepHeader(filePath);
 
-        CharStream input = CharStreams.fromString(header);
-        STEPGrammarLexer lexer = new STEPGrammarLexer(input);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        STEPGrammarParser parser = new STEPGrammarParser(tokens);
+        STEPGrammarParser parser = getSTEPGrammarParser(header);
         ParseTree tree = parser.header();
 
         IfcFileLoader loader = new IfcFileLoader();
@@ -54,10 +54,7 @@ public class IfcFileLoader extends STEPGrammarBaseVisitor<Void> {
         {
             line = line.trim();
             if(line.startsWith("#")) {
-                CharStream input = CharStreams.fromString(line);
-                STEPGrammarLexer lexer = new STEPGrammarLexer(input);
-                CommonTokenStream tokens = new CommonTokenStream(lexer);
-                STEPGrammarParser parser = new STEPGrammarParser(tokens);
+                STEPGrammarParser parser = getSTEPGrammarParser(line);
                 ParseTree tree = parser.dataLine();
                 loader.visit(tree);
             }
@@ -95,15 +92,15 @@ public class IfcFileLoader extends STEPGrammarBaseVisitor<Void> {
     public Void visitFileschema(STEPGrammarParser.FileschemaContext ctx) {
         String schemaName = ctx.STRING().getText().toUpperCase();
         if (schemaName.equals("\'IFC2X3\'")) {
-            entityList = SchemaFileLoader.getEntityList("src\\main\\resources\\IFC2X3.exp");
+            entityList = SchemaFileLoader.getSchemaLoader("src\\main\\resources\\IFC2X3.exp").getEntityList();;
             schemaType = IfcVersion.IFC2X3;
         }
         if (schemaName.equals("\'IFC4\'")) {
-            entityList = SchemaFileLoader.getEntityList("src\\main\\resources\\ifc4.exp");
+            entityList = SchemaFileLoader.getSchemaLoader("src\\main\\resources\\ifc4.exp").getEntityList();;
             schemaType = IfcVersion.IFC4;
         }
         if (schemaName.equals("\'IFC4X1\'")) {
-            entityList = SchemaFileLoader.getEntityList("src\\main\\resources\\IFC4X1.exp");
+            entityList = SchemaFileLoader.getSchemaLoader("src\\main\\resources\\IFC4X1.exp").getEntityList();;
             schemaType = IfcVersion.IFC4X1;
         }
         for (Entity entity: entityList) {

@@ -1,4 +1,4 @@
-package util;
+package model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,6 @@ public class Entity {
     private List<Attribute> attributes = new ArrayList<Attribute>();
 
     public Entity(String name) {
-        this.version = "IFC4";
         this.name = name;
     }
 
@@ -19,34 +18,41 @@ public class Entity {
         return name;
     }
 
-    public void setParent(Entity parent) {
-        this.parent = parent;
-    }
-
     public Entity getParent() {
         return parent;
+    }
+
+    public String getParentName() {
+        return parentName;
     }
 
     public String getVersion() {
         return version;
     }
 
-
-    public void addAttribute(String attr) {
-        Attribute attribute = new Attribute(attr);
-        attributes.add(attribute);
-    }
-
     public List<Attribute> getAttributes() {
         return attributes;
+    }
+
+    public void setParent(Entity parent) {
+        this.parent = parent;
     }
 
     public void setParentName(String parent) {
         this.parentName = parent;
     }
 
-    public String getParentName() {
-        return parentName;
+    public void addAttribute(String attr, String type) {
+        Attribute attribute = new Attribute(attr);
+        attribute.SetType(type);
+        attributes.add(attribute);
+    }
+
+    public Attribute findAttr(String attrName) {
+        for (Attribute attr : attributes) {
+            if (attr.getName().equals(attrName)) return attr;
+        }
+        return null;
     }
 
     public String toString() {

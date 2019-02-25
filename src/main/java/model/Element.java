@@ -1,6 +1,4 @@
-package util;
-
-import util.Entity;
+package model;
 
 import java.util.ArrayList;
 import java.util.List;
