@@ -1,14 +1,12 @@
 package dao;
 
+import model.*;
+import model.Entity;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.io.fs.FileUtils;
-import model.Element;
-import model.Entity;
-import model.Attribute;
-import model.IfcFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +29,7 @@ public class IfcData {
 
     public void createDb() throws IOException
     {
-        FileUtils.deleteRecursively( databaseDirectory );
+        //FileUtils.deleteRecursively( databaseDirectory );
 
         // START SNIPPET: startDb
         graphDb = new GraphDatabaseFactory().newEmbeddedDatabase( databaseDirectory );
@@ -42,6 +40,7 @@ public class IfcData {
         insertAll(ifcFile.getElementList(), ifcFile.getEntityMap());
         long midTime=System.currentTimeMillis();
         CreateRelation();
+        CreateInverseRelation();
         long endTime=System.currentTimeMillis();
         System.out.println("插入节点"+(midTime-startTime));
         System.out.println("建立关系"+(endTime-midTime));
@@ -186,6 +185,48 @@ public class IfcData {
 
     }
 
+    private void CreateInverseRelation() {
+        Set<InverseInfo> inverseInfos = ifcFile.getInverseInfoSet();
+
+        for (InverseInfo info: inverseInfos) {
+
+            try (Transaction tx = graphDb.beginTx()) {
+                Iterator<Node> iter = graphDb.findNodes(Label.label(info.ifcRelType));
+                while (iter.hasNext()) {
+                    Node node = iter.next();
+
+                    Iterable<Relationship> rels = node.getRelationships(RelationshipType.withName(info.attrName));
+                    Iterable<Relationship> rels2 = node.getRelationships(RelationshipType.withName(info.attrNameOther));
+
+                    //direction1
+                    if (!info.invName.equals("None")) {
+                        for (Relationship rel : rels) {
+                            Node startNode = rel.getEndNode();
+                            for (Relationship rel2: rels2) {
+                                Node endNode = rel2.getEndNode();
+                                startNode.createRelationshipTo(endNode, RelationshipType.withName(info.invName));
+                            }
+                        }
+                    }
+
+                    //direction2
+                    if (!info.invNameOther.equals("None")) {
+                        for (Relationship rel: rels2) {
+                            Node startNode = rel.getEndNode();
+                            for (Relationship rel2: rels) {
+                                Node endNode = rel2.getEndNode();
+                                startNode.createRelationshipTo(endNode, RelationshipType.withName(info.invNameOther));
+                            }
+                        }
+                    }
+
+                    tx.success();
+
+                }
+            }
+        }
+    }
+
     private Node findNodeByLineId(String matched) {
         matched = matched.replaceAll("#", "");
         int lineID = Integer.parseInt(matched);
@@ -247,7 +288,7 @@ public class IfcData {
     public static void main(String[] args) throws IOException {
         //String path = "src\\main\\resources\\ifc4.exp";
         long startTime=System.currentTimeMillis();
-        IfcData meta = new IfcData("E:\\1万达\\模型\\WDGC-Q-AC-B01_ifc4rv.ifc");
+        IfcData meta = new IfcData("E:\\1万达\\模型\\WDGC-Q-AC-B01-update.ifc");
         //IfcData meta = new IfcData("E:\\1万达\\模型\\WDGC-Q-AR-B01.ifc");
         //IfcData meta = new IfcData("E:\\\\1labdata\\\\IFC文件\\\\qhzf.ifc");
         long midTime=System.currentTimeMillis();

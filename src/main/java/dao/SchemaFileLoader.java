@@ -1,5 +1,6 @@
 package dao;
 
+import model.InverseInfo;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -15,6 +16,7 @@ public class SchemaFileLoader extends ExpressGrammarBaseVisitor<Void> {
     private Entity curEntity;
     private List<Entity> entityList = new LinkedList<>();
     private Map<String, String[]> selectType = new HashMap<>();
+    //private Set<InverseInfo> inverseInfos = new HashSet<>();
 
     /**
      *
@@ -48,6 +50,8 @@ public class SchemaFileLoader extends ExpressGrammarBaseVisitor<Void> {
     }
 
     public Map<String, String[]> getSelectType() { return selectType;}
+
+    //public Set<InverseInfo> getInverseInfos() {return inverseInfos;}
 
     private void getDerivedAttributes() {
         Map<String, Entity> entityMap = new HashMap<String, Entity>();
@@ -135,6 +139,15 @@ public class SchemaFileLoader extends ExpressGrammarBaseVisitor<Void> {
         }
         return null;
     }
+
+//    public Void visitInverseSentence(ExpressGrammarParser.InverseSentenceContext ctx) {
+//        String inv = ctx.NAME(0).getText();
+//        String reltype = ctx.NAME(1).getText();
+//        String attr = ctx.NAME(2).getText();
+//        InverseInfo info = new InverseInfo(reltype, attr, inv);
+//        inverseInfos.add(info);
+//        return null;
+//    }
 
 
 

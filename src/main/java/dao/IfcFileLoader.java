@@ -3,6 +3,7 @@ package dao;
 import model.Element;
 import model.Entity;
 import model.IfcFile;
+import model.InverseInfo;
 import org.antlr.v4.runtime.tree.ParseTree;
 import parser.STEPGrammarBaseVisitor;
 import parser.STEPGrammarParser;
@@ -22,12 +23,14 @@ public class IfcFileLoader extends STEPGrammarBaseVisitor<Void> {
     private List<Entity> entityList;
     private Map<String, Entity> entityMap = new HashMap<String, Entity>();
     private Set<String> exclude;
+    private Set<InverseInfo> inverseInfos;
 
     public int cnt = 0;
 
     public IfcFileLoader() throws IOException{
 
         exclude = ConfigReader.readExcluded();
+        inverseInfos = ConfigReader.readInverseConfig();
 
     }
 
@@ -41,7 +44,7 @@ public class IfcFileLoader extends STEPGrammarBaseVisitor<Void> {
         IfcFileLoader loader = new IfcFileLoader();
         loader.visit(tree);
         parseDataLine(filePath, loader);
-        IfcFile file = new IfcFile(loader.modelName, loader.schemaType, loader.elementList, loader.entityMap);
+        IfcFile file = new IfcFile(loader.modelName, loader.schemaType, loader.elementList, loader.entityMap, loader.inverseInfos);
 
         return file;
     }
@@ -89,20 +92,37 @@ public class IfcFileLoader extends STEPGrammarBaseVisitor<Void> {
     }
 
     @Override
-    public Void visitFileschema(STEPGrammarParser.FileschemaContext ctx) {
+    public Void visitFileschema(STEPGrammarParser.FileschemaContext ctx){
         String schemaName = ctx.STRING().getText().toUpperCase();
+        IfcMetaData metaData = null;
         if (schemaName.equals("\'IFC2X3\'")) {
-            entityList = SchemaFileLoader.getSchemaLoader("src\\main\\resources\\IFC2X3.exp").getEntityList();;
+            SchemaFileLoader schema = SchemaFileLoader.getSchemaLoader("src\\main\\resources\\IFC2X3.exp");
+            entityList = schema.getEntityList();
             schemaType = IfcVersion.IFC2X3;
+
+            metaData = new IfcMetaData(entityList, schema.getSelectType());
         }
         if (schemaName.equals("\'IFC4\'")) {
-            entityList = SchemaFileLoader.getSchemaLoader("src\\main\\resources\\ifc4.exp").getEntityList();;
+            SchemaFileLoader schema = SchemaFileLoader.getSchemaLoader("src\\main\\resources\\ifc4.exp");
+            entityList = schema.getEntityList();
             schemaType = IfcVersion.IFC4;
+
+            metaData = new IfcMetaData(entityList, schema.getSelectType());
         }
         if (schemaName.equals("\'IFC4X1\'")) {
-            entityList = SchemaFileLoader.getSchemaLoader("src\\main\\resources\\IFC4X1.exp").getEntityList();;
+            SchemaFileLoader schema = SchemaFileLoader.getSchemaLoader("src\\main\\resources\\IFC4X1.exp");
+            entityList = schema.getEntityList();
             schemaType = IfcVersion.IFC4X1;
+
+            metaData = new IfcMetaData(entityList, schema.getSelectType());
         }
+        try {
+            metaData.createDb();
+            metaData.shutDown();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
         for (Entity entity: entityList) {
             entityMap.put(entity.getName().toUpperCase(), entity);
         }

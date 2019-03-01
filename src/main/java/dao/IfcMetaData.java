@@ -43,6 +43,11 @@ public class IfcMetaData {
         }
     }
 
+    public IfcMetaData(List<Entity> entityList, Map<String, String[]> selectType) {
+        this.entityList = entityList;
+        this.selectType = selectType;
+    }
+
     void createDb() throws IOException
     {
         FileUtils.deleteRecursively( databaseDirectory );
