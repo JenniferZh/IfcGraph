@@ -40,7 +40,8 @@ public class ColorRule {
         //List<String> colorPath2 = Arrays.asList("RelatedObjects","RelatingMaterial","RepresentedMaterial","Representations","Items","Styles","Styles","Styles","SurfaceColour");
         TraversalDescription traverseColor2 = BaseRule.findPathsDFS(colorPath2, db);
 
-        List<String> colorPath3 = Arrays.asList( "RelatedObjects","RelatingMaterial","RepresentedMaterial","Representations","Items","Styles","Styles","Styles","SurfaceColour");
+        //List<String> colorPath3 = Arrays.asList( "RelatedObjects","RelatingMaterial","RepresentedMaterial","Representations","Items","Styles","Styles","Styles","SurfaceColour");
+        List<String> colorPath3 = Arrays.asList("Representation","Representations","Items","MappingSource", "MappedRepresentation","Items","StyledByItem","Styles","Styles","SurfaceColour");
         TraversalDescription traverseColor3 = BaseRule.findPathsDFS(colorPath3, db);
 
         Set<Node> distributionElements = new HashSet<>();
@@ -52,8 +53,10 @@ public class ColorRule {
                 Node system = nodeIter.next();
                 Iterable<Relationship> rels = system.getRelationships(RelationshipType.withName("IsGroupedBy"));
                 for (Relationship rel : rels) {
-                    if (!rel.getEndNode().hasLabel(Label.label("IfcDistributionPort")))
+                    if (!rel.getEndNode().hasLabel(Label.label("IfcDistributionPort"))) {
                         distributionElements.add(rel.getEndNode());
+                        //rel.getEndNode().getRelationships()
+                    }
                 }
             }
             tx.success();
@@ -61,17 +64,24 @@ public class ColorRule {
         //System.out.println(distributionElements.size());
         for (Node node: distributionElements) {
             List<Node> colorNodes = BaseRule.getEndNodes(traverseColor, node, db);
-            if (colorNodes.size() == 1) {
+            if (colorNodes.size() > 0) {
                 checkSingle(node, colorNodes.get(0));
             } else {
                 List<Node> colorNodesForCovering = BaseRule.getEndNodes(traverseColor2, node, db);
-                if (colorNodesForCovering.size() == 1) {
+                if (colorNodesForCovering.size() > 0) {
                     checkSingle(node, colorNodesForCovering.get(0));
                 } else {
                     List<Node> colorNodesForMaterial = BaseRule.getEndNodes(traverseColor3, node, db);
-                    if (colorNodesForMaterial.size() == 1) {
+                    if (colorNodesForMaterial.size() > 0) {
                         checkSingle(node, colorNodesForMaterial.get(0));
                     } else {
+//                        try (Transaction tx=db.beginTx()) {
+//                            int ans = (int) node.getProperty("lineId");
+//                            String type = (String) node.getProperty("IfcType");
+//                            System.out.println(ans+" "+type);
+//                            tx.success();
+//                        }
+
                         System.out.println("not found");
                     }
                 }
@@ -154,10 +164,11 @@ public class ColorRule {
             if (Math.round(red*255) == this.red && Math.round(green*255) == this.green && Math.round(blue*255) == this.blue)
                 status = true;
 
-            //System.out.println(status);
+            //System.out.println("test");
 
             item = new ResultItem(ruleContent, ifcLineId, ifcType, status);
-            System.out.println(item + " " + red*255 + " " + green*255 + " " + blue*255);
+            //if (!item.status)
+            //    System.out.println(item + " (" + Math.round(red*255) + "," + Math.round(green*255) + "," + Math.round(blue*255)+")");
             tx.success();
         }
         return item;

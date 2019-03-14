@@ -14,6 +14,8 @@ public class ResultItem {
     }
 
     public String toString() {
-        return ruleContent+" "+ifcType+" "+ifcLineId+" "+status;
+        String[] rules = ruleContent.split(" ");
+        return ifcLineId+" "+ifcType+" "+rules[0]+" "+rules[2];
+        //return ruleContent+" "+ifcType+" "+ifcLineId+" "+status;
     }
 }

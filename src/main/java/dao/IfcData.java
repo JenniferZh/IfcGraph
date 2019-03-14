@@ -288,8 +288,10 @@ public class IfcData {
     public static void main(String[] args) throws IOException {
         //String path = "src\\main\\resources\\ifc4.exp";
         long startTime=System.currentTimeMillis();
-        IfcData meta = new IfcData("E:\\1万达\\模型\\WDGC-Q-AC-B01-update.ifc");
-        //IfcData meta = new IfcData("E:\\1万达\\模型\\WDGC-Q-AR-B01.ifc");
+        //IfcData meta = new IfcData("E:\\1万达\\model-update\\WDGC-Q-PL-B01-n.ifc");
+        //IfcData meta = new IfcData("E:\\1万达\\model-update\\WDGC-Q-AC-B01-update.ifc");
+        IfcData meta = new IfcData("E:\\1万达\\模型\\WDGC-Q-AR-B01.ifc");
+        //IfcData meta = new IfcData("E:\\1万达\\模型\\WDGC-Q-EL-B01-ELC.ifc");
         //IfcData meta = new IfcData("E:\\\\1labdata\\\\IFC文件\\\\qhzf.ifc");
         long midTime=System.currentTimeMillis();
         System.out.println("加载文件"+(midTime-startTime));
