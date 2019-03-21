@@ -8,6 +8,7 @@ import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.io.fs.FileUtils;
 
+import javax.management.relation.Relation;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -198,7 +199,7 @@ public class IfcData {
                     Iterable<Relationship> rels = node.getRelationships(RelationshipType.withName(info.attrName));
                     Iterable<Relationship> rels2 = node.getRelationships(RelationshipType.withName(info.attrNameOther));
 
-                    //direction1
+                    //direction1 inverse created
                     if (!info.invName.equals("None")) {
                         for (Relationship rel : rels) {
                             Node startNode = rel.getEndNode();
@@ -209,7 +210,7 @@ public class IfcData {
                         }
                     }
 
-                    //direction2
+                    //direction2 inverse created
                     if (!info.invNameOther.equals("None")) {
                         for (Relationship rel: rels2) {
                             Node startNode = rel.getEndNode();
@@ -219,6 +220,11 @@ public class IfcData {
                             }
                         }
                     }
+
+                    //delete IfcRelation Node
+                    Iterable<Relationship> all_rels = node.getRelationships();
+                    for (Relationship rel: all_rels) rel.delete();
+                    node.delete();
 
                     tx.success();
 
@@ -290,7 +296,8 @@ public class IfcData {
         long startTime=System.currentTimeMillis();
         //IfcData meta = new IfcData("E:\\1万达\\model-update\\WDGC-Q-PL-B01-n.ifc");
         //IfcData meta = new IfcData("E:\\1万达\\model-update\\WDGC-Q-AC-B01-update.ifc");
-        IfcData meta = new IfcData("E:\\1万达\\模型\\WDGC-Q-AR-B01.ifc");
+        IfcData meta = new IfcData("E:\\1万达\\模型\\SampleHouse2.ifc");
+        //IfcData meta = new IfcData("E:\\1万达\\模型\\WDGC-Q-AR-B01.ifc");
         //IfcData meta = new IfcData("E:\\1万达\\模型\\WDGC-Q-EL-B01-ELC.ifc");
         //IfcData meta = new IfcData("E:\\\\1labdata\\\\IFC文件\\\\qhzf.ifc");
         long midTime=System.currentTimeMillis();
